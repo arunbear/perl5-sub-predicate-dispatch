@@ -1,8 +1,14 @@
-use strict;
 package Sub::PredicateDispatch;
 
+use strict;
+use Params::Validate qw(:all);
+
 sub new {
-    my ($class, %arg) = @_;
+    my $class = shift;
+    my %arg = validate(@_, {
+        dispatch => { type => CODEREF,  default => sub { $_[0] } },
+        when     => { type => ARRAYREF, default => [] },
+    });
 
     my $f = sub { 
         if((caller)[0] eq __PACKAGE__) {
