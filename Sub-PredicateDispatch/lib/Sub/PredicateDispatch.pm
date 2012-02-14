@@ -24,11 +24,20 @@ sub new {
               ? $pred->($dispatch_val) 
               : $pred eq $dispatch_val;
             if($matched) {
-                return $action->($it);
+                return ref $action eq 'CODE' ? $action->($it) : $action;
             }
         }
     };
     return bless $f => $class;
+}
+
+sub when {
+    my $self = shift;
+    validate_pos(@_, 1, 1);
+
+    my $dispatch_href = $self->();
+    push @{ $dispatch_href->{when} }, @_;
+    return $self;
 }
 
 1;
