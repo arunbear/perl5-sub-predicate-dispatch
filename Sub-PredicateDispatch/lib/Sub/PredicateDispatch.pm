@@ -1,15 +1,23 @@
 package Sub::PredicateDispatch;
 
+# ABSTRACT: Predicate Dispatch for Perl
+
 use strict;
+use Exporter 'import';
 use Params::Validate qw(:all);
+use Sub::Install;
+
 use Exception::Class ('Sub::PredicateDispatch::E::NoDefault');
+
+our @EXPORT_OK = qw(gsub);
 
 sub new {
     my $class = shift;
     my %arg = validate(@_, {
         dispatch => { type => CODEREF,  default => sub { $_[0] } },
         when     => { type => ARRAYREF, default => [] },
-        default  => 0,
+        default  => { type => CODEREF | UNDEF, optional => 1 },
+        name     => { type => SCALAR  | UNDEF, optional => 1 },
     });
 
     my $f = sub { 
@@ -37,7 +45,20 @@ sub new {
             Sub::PredicateDispatch::E::NoDefault->throw;
         }
     };
-    return bless $f => $class;
+
+    bless $f => $class;
+    if ( $arg{name} ) {
+        Sub::Install::install_sub({
+            code => $f,
+            into => (caller(1))[0],
+            as   => $arg{name},
+        });
+    }
+    return $f;
+}
+
+sub gsub {
+    __PACKAGE__->new(@_);
 }
 
 sub when {
