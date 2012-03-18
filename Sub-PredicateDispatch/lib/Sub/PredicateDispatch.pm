@@ -80,3 +80,45 @@ sub default {
 }
 
 1;
+
+__END__
+=pod
+
+=head1 SYNOPSIS
+
+use Sub::PredicateDispatch;
+use Math::Trig;
+
+my $area = Sub::PredicateDispatch->new(
+    dispatch => sub { $_[0]->{shape} },
+    when => [
+        square => sub { shift->{side} ** 2 },
+        sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 }, 
+    ],
+);
+
+my $square = { shape => 'square', side => 2 };
+print $area->($square) . "\n"; # 4
+
+my $circle = { shape => 'circle', radius => 1 };
+print $area->($circle) . "\n"; # 3.14...
+
+=head1 DESCRIPTION
+
+This module provides an implementation of Predicate Dispatch, a mechanism that generalizes
+the method dispatch system found in Object Oriented languages.
+
+Rather than dispatching based on the class of the invocing object (as with single dispatch languages),
+or on the classes of more than one of the method's arguments (as with languages supporting multiple dispatch),
+predicate dispatch enables dispatch based on arbitrary properties of the method's arguments which need 
+not even be objects.
+
+The implementation here is inspired by a JavaScript implementation (L<http://krisjordan.com/multimethod-js>),
+which itself is inspired by the multimethod construct from the Clojure language (L<http://clojure.org/multimethods>).
+
+=head1 INTERFACE
+
+
+=head1 EXAMPLES
+
+
