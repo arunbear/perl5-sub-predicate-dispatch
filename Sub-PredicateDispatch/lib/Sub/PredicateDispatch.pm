@@ -9,7 +9,8 @@ use Sub::Install;
 
 use Exception::Class ('Sub::PredicateDispatch::E::NoDefault');
 
-our @EXPORT_OK = qw(gsub);
+our @EXPORT_OK = qw(generic case_for default_for);
+our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 sub new {
     my $class = shift;
@@ -57,10 +58,6 @@ sub new {
     return $f;
 }
 
-sub gsub {
-    __PACKAGE__->new(@_);
-}
-
 sub when {
     my $self = shift;
     validate_pos(@_, 1, 1);
@@ -79,6 +76,48 @@ sub default {
     return $self;
 }
 
+my %Object;
+
+sub generic {
+    my %arg;
+    $arg{name} = shift;
+
+    if ( my $code = shift ) {
+        $arg{dispatch} = $code;
+    }
+
+    my $package = (caller)[0];
+    my $full_name = "${package}::$arg{name}";
+    my $obj = __PACKAGE__->new(%arg);
+    $Object{$full_name} = $obj;
+    $obj->()->{full_name} = $full_name;
+    return $obj;
+}
+
+sub case_for {
+    my $name = shift;
+    my $package = (caller)[0];
+    my $obj = $Object{"${package}::$name"};
+    $obj->when(@_);
+}
+
+sub default_for {
+    my ($name, $default) = @_;
+    my $package = (caller)[0];
+    my $obj = $Object{"${package}::$name"};
+    $obj->default($default);
+}
+
+DESTROY {
+    my ($self) = @_;
+
+    my $guts = $self->();
+
+    if ( exists $guts->{full_name} ) {
+        delete $Object{ $guts->{full_name} };
+    }
+}
+
 1;
 
 __END__
@@ -86,29 +125,29 @@ __END__
 
 =head1 SYNOPSIS
 
-use Sub::PredicateDispatch;
-use Math::Trig;
+    use Sub::PredicateDispatch;
+    use Math::Trig;
 
-my $area = Sub::PredicateDispatch->new(
-    dispatch => sub { $_[0]->{shape} },
-    when => [
-        square => sub { shift->{side} ** 2 },
-        sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 }, 
-    ],
-);
+    my $area = Sub::PredicateDispatch->new(
+        dispatch => sub { $_[0]->{shape} },
+        when => [
+            square => sub { shift->{side} ** 2 },
+            sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 }, 
+        ],
+    );
 
-my $square = { shape => 'square', side => 2 };
-print $area->($square) . "\n"; # 4
+    my $square = { shape => 'square', side => 2 };
+    print $area->($square) . "\n"; # 4
 
-my $circle = { shape => 'circle', radius => 1 };
-print $area->($circle) . "\n"; # 3.14...
+    my $circle = { shape => 'circle', radius => 1 };
+    print $area->($circle) . "\n"; # 3.14...
 
 =head1 DESCRIPTION
 
 This module provides an implementation of Predicate Dispatch, a mechanism that generalizes
 the method dispatch system found in Object Oriented languages.
 
-Rather than dispatching based on the class of the invocing object (as with single dispatch languages),
+Rather than dispatching based on the class of the invoking object (as with single dispatch languages),
 or on the classes of more than one of the method's arguments (as with languages supporting multiple dispatch),
 predicate dispatch enables dispatch based on arbitrary properties of the method's arguments which need 
 not even be objects.
