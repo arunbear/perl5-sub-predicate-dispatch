@@ -17,7 +17,7 @@ sub new {
     my %arg = validate(@_, {
         dispatch => { type => CODEREF,  default => sub { $_[0] } },
         when     => { type => ARRAYREF, default => [] },
-        default  => { type => CODEREF | UNDEF, optional => 1 },
+        default  => { type => CODEREF | SCALAR | UNDEF, optional => 1 },
         name     => { type => SCALAR  | UNDEF, optional => 1 },
     });
 
@@ -68,8 +68,7 @@ sub when {
 }
 
 sub default {
-    my $self = shift;
-    my ($default) = validate_pos(@_, 1);
+    my ($self, $default) = @_;
 
     my $dispatch_href = $self->();
     $dispatch_href->{default} = $default;
@@ -80,7 +79,8 @@ my %Object;
 
 sub generic {
     my %arg;
-    $arg{name} = shift;
+    my @a = (shift);
+    ($arg{name}) = validate_pos(@a, { type => SCALAR });
 
     if ( my $code = shift ) {
         $arg{dispatch} = $code;
@@ -95,14 +95,17 @@ sub generic {
 }
 
 sub case_for {
-    my $name = shift;
+    my @a = (shift);
+    my ($name) = validate_pos(@a, { type => SCALAR });
     my $package = (caller)[0];
     my $obj = $Object{"${package}::$name"};
     $obj->when(@_);
 }
 
 sub default_for {
-    my ($name, $default) = @_;
+    my @a = (shift);
+    my ($name) = validate_pos(@a, { type => SCALAR });
+    my $default = shift;
     my $package = (caller)[0];
     my $obj = $Object{"${package}::$name"};
     $obj->default($default);
