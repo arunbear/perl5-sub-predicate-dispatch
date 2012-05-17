@@ -78,6 +78,10 @@ sub default {
 my %Object;
 
 sub generic {
+    if ( ! @_ ) {
+        return __PACKAGE__->new;
+    }
+
     my %arg;
     my @a = (shift);
     ($arg{name}) = validate_pos(@a, { type => SCALAR });
@@ -128,6 +132,26 @@ __END__
 
 =head1 SYNOPSIS
 
+    # Keyword style:
+
+    use Math::Trig;
+    use Sub::PredicateDispatch ':all';
+
+    generic 'area' => sub { $_[0]->{shape} };
+
+    case_for 'area', square => sub { shift->{side} ** 2 };
+
+    case_for 'area', sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 };
+
+    my $square = { shape => 'square', side => 2 };
+    print area($square) . "\n"; # 4
+
+    my $circle = { shape => 'circle', radius => 1 };
+    print area($circle) . "\n"; # 3.14...
+
+    
+    # OO style:
+    
     use Sub::PredicateDispatch;
     use Math::Trig;
 
