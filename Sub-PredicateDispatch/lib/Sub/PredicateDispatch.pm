@@ -3,6 +3,7 @@ package Sub::PredicateDispatch;
 # ABSTRACT: Predicate Dispatch for Perl
 
 use strict;
+use Data::Compare;
 use Exporter 'import';
 use Params::Validate qw(:all);
 use Sub::Install;
@@ -26,21 +27,29 @@ sub new {
             return \%arg;
         }
 
-        my $it = shift;
-        my $dispatch_val = $arg{dispatch}->($it);
+        my $dispatch_val = $arg{dispatch}->(@_);
 
         my @when = @{ $arg{when} };
         while(my ($pred, $action) = splice @when, 0, 2) {
-            my $matched = ref $pred eq 'CODE' 
-              ? $pred->($dispatch_val) 
-              : $pred eq $dispatch_val;
+            my $matched = do {
+                my $ref = ref $pred;
+                if (! $ref) {
+                    $pred eq $dispatch_val;
+                }
+                elsif ($ref eq 'CODE') {
+                    $pred->($dispatch_val);
+                }
+                else {
+                    Compare($pred, $dispatch_val);
+                }
+            };
             if($matched) {
-                return ref $action eq 'CODE' ? $action->($it) : $action;
+                return ref $action eq 'CODE' ? $action->(@_) : $action;
             }
         }
         if(exists $arg{default}) {
             my $default = $arg{default};
-            return ref $default eq 'CODE' ? $default->($it) : $default;
+            return ref $default eq 'CODE' ? $default->(@_) : $default;
         }
         else {
             Sub::PredicateDispatch::E::NoDefault->throw;
