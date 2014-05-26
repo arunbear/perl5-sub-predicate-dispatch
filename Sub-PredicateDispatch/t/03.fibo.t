@@ -6,8 +6,8 @@ use Sub::PredicateDispatch ':all';
 
 generic 'fibo';
 
-case_for 'fibo', 0 => 0;
-case_for 'fibo', 1 => 1;
+multimethod 'fibo', 0 => 0;
+multimethod 'fibo', 1 => 1;
 default_for 'fibo' => sub {
     my $n = shift;
     return fibo($n - 1) + fibo($n - 2);

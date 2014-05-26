@@ -12,9 +12,9 @@ use Sub::PredicateDispatch ':all';
 
 generic 'play' => sub { [map(ref, @_)] };
 
-case_for 'play', [qw/Paper Rock/]     => sub { 1 };
-case_for 'play', [qw/Paper Scissors/] => sub { 0 };
-case_for 'play', [qw/Rock Scissors/]  => sub { 1 };
+multimethod 'play', [qw/Paper Rock/]     => sub { 1 };
+multimethod 'play', [qw/Paper Scissors/] => sub { 0 };
+multimethod 'play', [qw/Rock Scissors/]  => sub { 1 };
 
 my $rock  = Rock->new;
 my $paper = Paper->new;

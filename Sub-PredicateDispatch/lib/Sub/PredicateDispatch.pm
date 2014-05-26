@@ -10,7 +10,7 @@ use Sub::Install;
 
 use Exception::Class ('Sub::PredicateDispatch::E::NoDefault');
 
-our @EXPORT_OK = qw(generic case_for default_for);
+our @EXPORT_OK = qw(generic multimethod default_for);
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 sub new {
@@ -107,7 +107,7 @@ sub generic {
     return $obj;
 }
 
-sub case_for {
+sub multimethod {
     my @a = (shift);
     my ($name) = validate_pos(@a, { type => SCALAR });
     my $package = (caller)[0];
@@ -148,9 +148,9 @@ __END__
 
     generic 'area' => sub { $_[0]->{shape} };
 
-    case_for 'area', square => sub { shift->{side} ** 2 };
+    multimethod 'area', square => sub { shift->{side} ** 2 };
 
-    case_for 'area', sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 };
+    multimethod 'area', sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 };
 
     my $square = { shape => 'square', side => 2 };
     print area($square) . "\n"; # 4

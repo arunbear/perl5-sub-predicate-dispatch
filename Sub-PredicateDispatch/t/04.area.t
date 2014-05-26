@@ -7,9 +7,9 @@ use Sub::PredicateDispatch ':all';
 
 generic 'area' => sub { $_[0]->{shape} };
 
-case_for 'area', square => sub { shift->{side} ** 2 };
+multimethod 'area', square => sub { shift->{side} ** 2 };
 
-case_for 'area', sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 };
+multimethod 'area', sub { $_[0] eq 'circle' } => sub { pi * shift->{radius} ** 2 };
 
 my $square = { shape => 'square', side => 2 };
 is(area($square), 4);
