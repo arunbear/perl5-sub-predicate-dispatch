@@ -10,7 +10,7 @@ use Sub::Install;
 
 use Exception::Class ('Sub::PredicateDispatch::E::NoDefault');
 
-our @EXPORT_OK = qw(generic multimethod default_for);
+our @EXPORT_OK = qw(generic multimethod defaultmethod);
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 sub new {
@@ -115,7 +115,7 @@ sub multimethod {
     $obj->when(@_);
 }
 
-sub default_for {
+sub defaultmethod {
     my @a = (shift);
     my ($name) = validate_pos(@a, { type => SCALAR });
     my $default = shift;
