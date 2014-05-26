@@ -1,0 +1,4 @@
+requires Data::Compare;
+requires Params::Validate;
+requires Sub::Install;
+requires Exception::Class;
