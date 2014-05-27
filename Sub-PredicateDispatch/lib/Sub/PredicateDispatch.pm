@@ -10,7 +10,7 @@ use Sub::Install;
 
 use Exception::Class ('Sub::PredicateDispatch::E::NoDefault');
 
-our @EXPORT_OK = qw(generic multimethod defaultmethod);
+our @EXPORT_OK = qw(generic multimethod defaultmethod classes);
 our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 sub new {
@@ -122,6 +122,24 @@ sub defaultmethod {
     my $package = (caller)[0];
     my $obj = $Object{"${package}::$name"};
     $obj->default($default);
+}
+
+# Predicate builder for CLOS style multimethods
+sub classes {
+    my @classes = @_;
+    return sub {
+        my $aref = shift;
+        return unless @$aref == @classes;
+
+        my $matched = 1;
+
+        foreach my $i ( 0 .. $#classes ) {
+            my $class = $classes[$i];
+            my $obj   = $aref->[$i];
+            $matched &&= $obj->isa($class);
+        }
+        return $matched; 
+    }
 }
 
 DESTROY {
