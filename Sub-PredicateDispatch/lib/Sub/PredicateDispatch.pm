@@ -125,20 +125,27 @@ sub defaultmethod {
 }
 
 # Predicate builder for CLOS style multimethods
-sub classes {
-    my @classes = @_;
+*classes = test_objects_with('isa');
+
+*roles = test_objects_with('DOES');
+
+sub test_objects_with {
+    my $test = shift;
     return sub {
-        my $aref = shift;
-        return unless @$aref == @classes;
+        my @pkgs = @_;
+        return sub {
+            my $aref = shift;
+            return unless @$aref == @pkgs;
 
-        my $matched = 1;
+            my $matched = 1;
 
-        foreach my $i ( 0 .. $#classes ) {
-            my $class = $classes[$i];
-            my $obj   = $aref->[$i];
-            $matched &&= $obj->isa($class);
+            foreach my $i ( 0 .. $#pkgs ) {
+                my $class = $pkgs[$i];
+                my $obj   = $aref->[$i];
+                $matched &&= $obj->$test($class);
+            }
+            return $matched; 
         }
-        return $matched; 
     }
 }
 
