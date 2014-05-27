@@ -10,11 +10,11 @@ package main;
 use Test::More tests => 3;
 use Sub::PredicateDispatch ':all';
 
-generic 'play' => sub { [map(ref, @_)] };
+generic play => sub { [map(ref, @_)] };
 
-multimethod 'play', [qw/Paper Rock/]     => sub { 1 };
-multimethod 'play', [qw/Paper Scissors/] => sub { 0 };
-multimethod 'play', [qw/Rock Scissors/]  => sub { 1 };
+multimethod play => [qw|Paper Rock|]     => 1;
+multimethod play => [qw|Paper Scissors|] => 0;
+multimethod play => [qw|Rock Scissors|]  => 1;
 
 my $rock  = Rock->new;
 my $paper = Paper->new;
